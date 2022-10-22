@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 
 # Webscraper code
+# Replace the URL with your desired URL
 URL = "https://www.eater.com/maps/best-restaurants-florence-italy"
 page = requests.get(URL)
 
