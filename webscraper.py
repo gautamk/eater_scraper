@@ -11,7 +11,7 @@ from slugify import slugify
 
 # Webscraper code
 # Replace the URL with your desired URL
-URL = "https://pdx.eater.com/maps/38-best-portland-oregon-restaurants"
+URL = "https://pdx.eater.com/maps/best-portland-brunches-restaurants"
 page = requests.get(URL, timeout=30)
 
 
