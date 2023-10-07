@@ -3,20 +3,23 @@ This code scrapes from Eater's restaurant lists and adds it to a Google spreadsh
 You can then import the sheet into a Google map!
 """
 
-from oauth2client.service_account import ServiceAccountCredentials
-import gspread
 import requests
+import csv
 from bs4 import BeautifulSoup
+from slugify import slugify
 
 
 # Webscraper code
 # Replace the URL with your desired URL
-URL = "https://www.eater.com/maps/best-restaurants-florence-italy"
-page = requests.get(URL)
+URL = "https://pdx.eater.com/maps/38-best-portland-oregon-restaurants"
+page = requests.get(URL, timeout=30)
+
 
 soup = BeautifulSoup(page.content, "html.parser")
+page_title = soup.title.string
+output_file_name =  slugify(page_title) + ".csv"
 
-order = ['name', 'description', 'address', 'website', 'phone']
+fieldnames = ['name', 'description', 'address', 'website', 'phone']
 restaurants = [
     {
         'name': (''.join(tag.text for tag in restaurant.find_all('h1'))).replace(u'\xa0', ' '),
@@ -26,17 +29,8 @@ restaurants = [
         'phone': (''.join([(tag.find("a")).text for tag in restaurant.find_all("div", class_="c-mapstack__phone-url")])).replace('+', '\'+'),
     } for restaurant in soup.find_all("section", class_="c-mapstack__card")
 ]
-values = [[o[e] for e in order] for o in restaurants]
 
 
-# Accesses and writes to Google sheet
-scopes = [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive'
-    ]
-credentials = ServiceAccountCredentials.from_json_keyfile_name("eater-scraper-key.json", scopes)
-file = gspread.authorize(credentials)
-sheet = file.open("Eater Scraper")
-sheet = sheet.sheet1
-sheet.append_rows(values, value_input_option='USER_ENTERED')
-
+with open(output_file_name, 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writerows(restaurants)
